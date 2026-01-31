@@ -1,0 +1,67 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading$ | async"></mat-progress-bar>
+
+<div class="details-container">
+  <form [formGroup]="productForm" (ngSubmit)="saveproduct()">
+    <div class="actions">
+      <button type="button" mat-stroked-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon> Back
+      </button>
+      <button type="submit" mat-raised-button color="primary" [disabled]="productForm.invalid">
+        <mat-icon>{{ isAddMode ? 'add' : 'save' }}</mat-icon>
+        {{ isAddMode ? 'Create product' : 'Save Changes' }}
+      </button>
+    </div>
+
+    <mat-card class="product-info-card" *ngIf="{ product: product$ | async, loading: loading$ | async } as vm" @fadeIn>
+      
+      <div class="card-layout" *ngIf="(isAddMode || vm.product) && !vm.loading">
+
+        <div class="image-section">
+          <img
+            [src]="imagePreview || (isAddMode ? '' : productForm.get('images')?.value?.[0])"
+            class="detail-image">
+
+          <div class="image-actions">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+
+            <button type="button" mat-mini-fab color="accent" (click)="fileInput.click()" matTooltip="Change Photo">
+              <mat-icon>photo_camera</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-content">
+          <mat-card-header>
+            <mat-card-title>{{ isAddMode ? 'Add New Product' : 'Edit Product: ' + productForm.get('title')?.value
+              }}</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput formControlName="title">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Category</mat-label>
+                <input matInput formControlName="category">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Price</mat-label>
+                <input matInput type="number" formControlName="price">
+                <mat-icon matSuffix>attach_money</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="4"></textarea>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </div>
+      </div>
+    </mat-card>
+  </form>
+</div>

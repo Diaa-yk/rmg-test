@@ -1,0 +1,32 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading$ | async"></mat-progress-bar>
+<div class="container">
+  <div class="content">
+    <ng-container *ngIf="{ products: products$ | async, loading: loading$ | async, pag: pagination$ | async } as vm">
+      <div class="product-grid" [@listAnimation]="vm.products?.length">
+        <mat-card *ngFor="let product of vm.products" [routerLink]="['/product', product.id]" class="product-card">
+          <img mat-card-image [src]="product.images[0]" [alt]="product.title" class="product-img">
+          <button mat-icon-button  class="delete-btn" (click)="deleteProduct($event, product.id)">
+            <mat-icon >delete</mat-icon>
+          </button>
+          <mat-card-content>
+            <h3>{{ product.title }}</h3>
+            <p>ID: #{{ product.id }}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div *ngIf="vm.products?.length === 0 && !vm.loading" class="no-data">
+        No products found.
+      </div>
+
+      <div class="pagination-container" *ngIf="vm.pag">
+        <div class="page-info">
+          <span>Page <strong>{{ vm.pag.page }}</strong> of {{ vm.pag.total_pages }}</span>
+        </div>
+        <mat-paginator [length]="vm.pag.total" [pageSize]="8" [pageIndex]="vm.pag.page - 1" [hidePageSize]="true"
+          (page)="onPageChange($event)">
+        </mat-paginator>
+      </div>
+    </ng-container>
+  </div>
+</div>
