@@ -1,0 +1,24 @@
+<mat-toolbar color="primary" class="main-header">
+  <div class="header-container">
+    <span class="brand" routerLink="/">rmg_test</span>
+
+    <span class="spacer"></span>
+
+    <div class="add-button-container" routerLink="product/add" *ngIf="showTools">
+      <mat-icon>add</mat-icon>
+      <span class="add-text">Add Item</span>
+    </div>
+
+    <mat-form-field appearance="outline" class="search-field" *ngIf="showTools">
+      <mat-label>Search items</mat-label>
+      <input matInput type="text" [formControl]="searchControl" placeholder="e.g. lenovo">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="add-button-container" (click)="onLogout()" style="cursor: pointer;">
+      <mat-icon>logout</mat-icon>
+      <span class="add-text">Logout</span>
+    </div>
+
+  </div>
+</mat-toolbar>
