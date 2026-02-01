@@ -1,7 +1,7 @@
 <mat-progress-bar mode="indeterminate" *ngIf="loading$ | async"></mat-progress-bar>
 
 <div class="details-container">
-  <form [formGroup]="productForm" (ngSubmit)="saveproduct()">
+  <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
     <div class="actions">
       <button type="button" mat-stroked-button (click)="goBack()">
         <mat-icon>arrow_back</mat-icon> Back

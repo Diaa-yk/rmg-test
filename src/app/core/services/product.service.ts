@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, map, Observable, of } from 'rxjs';
-import { ProductList } from '../models/product.model';
+import { ProductList, ProductModel } from '../models/product.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class productService {
+export class ProductService {
   private readonly apiUrl = 'https://dummyjson.com/products';
   private readonly limit = 8;
 
@@ -36,7 +36,7 @@ export class productService {
     );
   }
 
-  getproductById(id: number): Observable<any> {
+  getProductById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map((product) => ({
         data: product,
@@ -44,13 +44,13 @@ export class productService {
     );
   }
 
-  addProduct(product: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/add`, product);
+  addProduct(product: ProductModel): Observable<ProductModel> {
+    return this.http.post<ProductModel>(`${this.apiUrl}/add`, product);
   }
 
-  updateProduct(id: number, data: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}`, data);
-  }
+  updateProduct(id: number, data: Partial<ProductModel>): Observable<any> {
+  return this.http.patch(`${this.apiUrl}/${id}`, data);
+}
 
   deleteProduct(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);

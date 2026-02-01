@@ -11,12 +11,23 @@ export class ProductFormGroup {
     });
   }
 
-  
+
   static getPayload(form: FormGroup) {
     const data = form.getRawValue();
     if (!data.id) {
       delete data.id;
     }
     return data;
+  }
+
+  static getDirtyValues(form: FormGroup): any {
+    const dirtyValues: any = {};
+    Object.keys(form.controls).forEach(key => {
+      const currentControl = form.get(key);
+      if (currentControl?.dirty) {
+        dirtyValues[key] = currentControl.value;
+      }
+    });
+    return dirtyValues;
   }
 }
