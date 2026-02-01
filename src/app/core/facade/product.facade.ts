@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, distinctUntilChanged, finalize, map, Observable, tap } from 'rxjs';
-import { productService } from '../services/product.service';
+import { ProductService } from '../services/product.service';
 import { ProductModel } from '../models/product.model';
 import { CacheService } from '../services/cache.service';
 import { NotificationService } from '../services/notification.service';
@@ -17,8 +17,9 @@ interface productState {
 
 @Injectable({ providedIn: 'root' })
 export class ProductFacade {
-  private readonly _productService = inject(productService);
+  private readonly productService = inject(ProductService);
   private notification = inject(NotificationService);
+  private cacheService = inject(CacheService);
   private _store = new BehaviorSubject<productState>({
     dataList: [],
     loading: false,
@@ -34,12 +35,12 @@ export class ProductFacade {
     map((s) => s.pagination),
     distinctUntilChanged()
   );
-  searchId$ = this._productService.searchId$;
+  searchId$ = this.productService.searchId$;
   filteredProducts$ = this.dataList$;
 
   loadProducts(page: number, searchId?: string) {
     this._store.next({ ...this._store.value, loading: true });
-    this._productService.getProducts(page, searchId).subscribe((res) => {
+    this.productService.getProducts(page, searchId).subscribe((res) => {
       this._store.next({
         dataList: res.products,
         pagination: {
@@ -53,17 +54,18 @@ export class ProductFacade {
   }
 
   updateSearchCriteria(id: string) {
-    this._productService.updateSearchId(id);
+    this.productService.updateSearchId(id);
   }
 
-  getproductById(id: number): Observable<any> {
-    return this._productService.getproductById(id);
+  getProductById(id: number): Observable<any> {
+    return this.productService.getProductById(id);
   }
 
-  addProduct(productData: any, file?: File | null): Observable<any> {
+  addProduct(productData: ProductModel, file?: File | null): Observable<ProductModel> {
     this._store.next({ ...this._store.value, loading: true });
-    return this._productService.addProduct(productData).pipe(
+    return this.productService.addProduct(productData).pipe(
       tap((newProduct) => {
+        this.cacheService.invalidate('products');
         this.notification.showSuccess('Product added successfully! 🎉');
         const currentState = this._store.value;
         this._store.next({
@@ -71,7 +73,6 @@ export class ProductFacade {
           dataList: [newProduct, ...currentState.dataList],
           loading: false
         });
-        inject(CacheService).invalidate('products');
       }),
       catchError((err) => {
         this.notification.showError('Failed to add product.');
@@ -81,38 +82,36 @@ export class ProductFacade {
     );
   }
 
-  updateproduct(id: number, productData: any, file?: File | null): Observable<any> {
-    return this._productService.updateProduct(id, productData).pipe(
-      tap(() => {
-        this.notification.showSuccess('Product updated successfully! ✅');
-      }),
+  updateProduct(id: number, productData: Partial<ProductModel>, file?: File | null): Observable<ProductModel> {
+    return this.productService.updateProduct(id, productData).pipe(
+      tap(() => this.notification.showSuccess('Product updated successfully! ✅')),
       catchError(err => {
-        this.notification.showError('Update failed. Please try again.');
+        this.notification.showError('Update failed.');
         throw err;
       })
     );
   }
 
   deleteProduct(id: number): void {
-  this._store.next({ ...this._store.value, loading: true });
+    this._store.next({ ...this._store.value, loading: true });
 
-  this._productService.deleteProduct(id).subscribe({
-    next: () => {
-      const currentState = this._store.value;
-      const updatedList = currentState.dataList.filter(p => p.id !== id);
-      
-      this._store.next({
-        ...currentState,
-        dataList: updatedList,
-        loading: false
-      });
-      
-      this.notification.showSuccess('Product deleted successfully!');
-    },
-    error: (err) => {
-      this._store.next({ ...this._store.value, loading: false });
-      this.notification.showError('Failed to delete product.');
-    }
-  });
-}
+    this.productService.deleteProduct(id).subscribe({
+      next: () => {
+        const currentState = this._store.value;
+        const updatedList = currentState.dataList.filter(p => p.id !== id);
+
+        this._store.next({
+          ...currentState,
+          dataList: updatedList,
+          loading: false
+        });
+
+        this.notification.showSuccess('Product deleted successfully!');
+      },
+      error: (err) => {
+        this._store.next({ ...this._store.value, loading: false });
+        this.notification.showError('Failed to delete product.');
+      }
+    });
+  }
 }
